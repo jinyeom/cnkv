@@ -2,6 +2,7 @@ package logger
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 )
@@ -14,6 +15,8 @@ type Logger struct {
 	nextId    uint64
 }
 
+// NewLogger creates a new file-based transaction logger. Return an error if
+// opening the log file fails.
 func NewLogger(filename string, bufSize int) (*Logger, error) {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
@@ -26,14 +29,14 @@ func NewLogger(filename string, bufSize int) (*Logger, error) {
 	}, nil
 }
 
+// Run starts a goroutine that writes incoming events to the log file. Note
+// that each event gets assigned an ID in a sequential order, as it gets
+// written.
 func (l *Logger) Run() {
 	go func() {
 		for e := range l.eventChan {
 			e.Id = l.nextId
-			if _, err := fmt.Fprintf(
-				l.file, "%d\t%d\t%s\t%s\n",
-				e.Id, e.Type, e.Key, e.Value,
-			); err != nil {
+			if _, err := fmt.Fprintln(l.file, Serialize(e)); err != nil {
 				l.errChan <- err
 				return
 			}
@@ -42,18 +45,23 @@ func (l *Logger) Run() {
 	}()
 }
 
+// WritePut sends a put event to the event channel.
 func (l *Logger) WritePut(key, value string) {
 	l.eventChan <- Event{Type: EventPut, Key: key, Value: value}
 }
 
+// WriteDel sends a delete event to the event channel.
 func (l *Logger) WriteDel(key string) {
 	l.eventChan <- Event{Type: EventDel, Key: key}
 }
 
+// Err returns a receive-only error channel.
 func (l *Logger) Err() <-chan error {
 	return l.errChan
 }
 
+// Replay reads a sequence of events from the transaction log file and sends
+// them to a channel from a goroutine.
 func (l *Logger) Replay() (<-chan Event, <-chan error) {
 	scanner := bufio.NewScanner(l.file)
 	eventChan := make(chan Event)
@@ -66,15 +74,12 @@ func (l *Logger) Replay() (<-chan Event, <-chan error) {
 		var e Event
 		for scanner.Scan() {
 			line := scanner.Text()
-			if _, err := fmt.Sscanf(
-				line, "%d\t%d\t%s\t%s",
-				&e.Id, &e.Type, &e.Key, &e.Value,
-			); err != nil {
+			if err := Deserialize(&e, line); err != nil {
 				errChan <- err
 				return
 			}
 			if e.Id <= l.nextId {
-				errChan <- fmt.Errorf("transaction ids out of order")
+				errChan <- errors.New("transaction ids out of order")
 				return
 			}
 			l.nextId = e.Id

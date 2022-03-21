@@ -34,10 +34,16 @@ func TestGetBucketIdx(t *testing.T) {
 		idx1 := s.getBucketIdx(testCase.key)
 		idx2 := s.getBucketIdx(testCase.key)
 		if idx1 != idx2 {
-			t.Errorf("%d: hash function is not deterministic: %d != %d", i, idx1, idx2)
+			t.Errorf(
+				"%d: hash function is not deterministic: %d != %d",
+				i, idx1, idx2,
+			)
 		}
 		if idx1 >= testCase.numBuckets {
-			t.Errorf("%d: expected index less than %d, got %d", i, testCase.numBuckets, idx1)
+			t.Errorf(
+				"%d: expected index less than %d, got %d",
+				i, testCase.numBuckets, idx1,
+			)
 		}
 	}
 }

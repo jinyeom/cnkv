@@ -101,16 +101,28 @@ func TestEventDeserialize(t *testing.T) {
 		var e Event
 		Deserialize(&e, testCase.serialized)
 		if e.Id != testCase.id {
-			t.Errorf("%d: expected id %d, got %d", i, testCase.id, e.Id)
+			t.Errorf(
+				"%d: expected id %d, got %d",
+				i, testCase.id, e.Id,
+			)
 		}
 		if e.Type != testCase.eventType {
-			t.Errorf("%d: expected event type %d, got %d", i, testCase.eventType, e.Type)
+			t.Errorf(
+				"%d: expected event type %d, got %d",
+				i, testCase.eventType, e.Type,
+			)
 		}
 		if e.Key != testCase.key {
-			t.Errorf("%d: expected key %s, got %s", i, testCase.key, e.Key)
+			t.Errorf(
+				"%d: expected key %s, got %s",
+				i, testCase.key, e.Key,
+			)
 		}
 		if e.Value != testCase.value {
-			t.Errorf("%d: expected value %s, got %s", i, testCase.value, e.Value)
+			t.Errorf(
+				"%d: expected value %s, got %s",
+				i, testCase.value, e.Value,
+			)
 		}
 	}
 }
