@@ -24,14 +24,14 @@ func NewEventDel(key string) Event {
 	return Event{Type: EventDel, Key: key}
 }
 
-func (e Event) Serialize() string {
+func Serialize(e Event) string {
 	return fmt.Sprintf("%d\t%d\t%s\t%s", e.Id, e.Type, e.Key, e.Value)
 }
 
-func (e Event) Deserialize(s string) error {
+func Deserialize(e *Event, s string) error {
 	if _, err := fmt.Sscanf(
 		s, "%d\t%d\t%s\t%s",
-		&e.Id, e.Type, e.Key, e.Value,
+		&e.Id, &e.Type, &e.Key, &e.Value,
 	); err != nil {
 		return err
 	}
