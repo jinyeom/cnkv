@@ -93,6 +93,7 @@ func (l *Logger) Replay() (<-chan Event, <-chan error) {
 	return eventChan, errChan
 }
 
+// Close closes the event and error channels and the log file.
 func (l *Logger) Close() error {
 	close(l.eventChan)
 	close(l.errChan)

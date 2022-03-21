@@ -9,6 +9,6 @@ This repository contains a naive implementation of a distributed key-value store
 ## Concepts
 - Concurrency support
 - Transaction logging
-- Containerization (Docker + Minikube)
+- Containerization
 - gRPC server/client
 - ...
